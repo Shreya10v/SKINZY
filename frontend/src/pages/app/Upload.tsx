@@ -3,30 +3,50 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { UploadCloud, Image as ImageIcon, X, Sparkles, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const Upload = () => {
   const [file, setFile] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [scanning, setScanning] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const handleFile = (f: File) => {
     const url = URL.createObjectURL(f);
     setFile(url);
+    setSelectedFile(f);
   };
 
-  const startScan = () => {
+  const startScan = async () => {
+    if (!selectedFile) return;
     setScanning(true);
     setProgress(0);
-    const t = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) {
-          clearInterval(t);
-          return 100;
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:5000/api/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
-        return p + 5;
-      });
-    }, 120);
-  };
+      );
+      console.log(response.data);
+      const t = setInterval(() => {
+        setProgress((p) => {
+          if (p >= 100) {
+            clearInterval(t);
+            return 100;
+          }
+          return p + 5;
+        });
+      }, 120);
+    } catch (error) {
+      console.error(error);
+    }
+};
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
