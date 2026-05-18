@@ -10,20 +10,24 @@ const Upload = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [scanning, setScanning] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [result, setResult] = useState<any>(null);
 
   const handleFile = (f: File) => {
+    setSelectedFile(f);
     const url = URL.createObjectURL(f);
     setFile(url);
-    setSelectedFile(f);
   };
 
   const startScan = async () => {
+    console.log("Button clicked");
     if (!selectedFile) return;
     setScanning(true);
     setProgress(0);
     const formData = new FormData();
     formData.append("image", selectedFile);
     try {
+      const formData = new FormData();
+      formData.append("image", selectedFile!);
       const response = await axios.post(
         "http://127.0.0.1:5000/api/upload",
         formData,
@@ -34,6 +38,7 @@ const Upload = () => {
         }
       );
       console.log(response.data);
+      setResult(response.data);
       const t = setInterval(() => {
         setProgress((p) => {
           if (p >= 100) {
@@ -104,9 +109,31 @@ const Upload = () => {
                 </div>
                 <Progress value={progress} className="h-2" />
                 {progress === 100 && (
-                  <Button asChild variant="gradient" size="lg" className="mt-3 w-full">
-                    <Link to="/app/result">View results <Sparkles className="ml-1 h-4 w-4" /></Link>
-                  </Button>
+                  <div className="space-y-4">
+
+    <div className="rounded-2xl border bg-section p-6">
+
+      <h3 className="text-xl font-bold">
+        Prediction Result
+      </h3>
+
+      <p className="mt-3 text-lg">
+        Disease:
+        <span className="font-semibold text-primary ml-2">
+          {result.prediction.disease}
+        </span>
+      </p>
+
+      <p className="mt-2 text-lg">
+        Confidence:
+        <span className="font-semibold text-green-500 ml-2">
+          {result.prediction.confidence}%
+        </span>
+      </p>
+
+    </div>
+
+  </div>
                 )}
               </div>
             ) : (

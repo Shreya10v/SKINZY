@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 import os
-
+from services.predict import predict_skin_disease
 from services.cloudinary_service import upload_to_cloudinary
 
 upload_bp = Blueprint("upload", __name__)
@@ -27,7 +27,11 @@ def upload_image():
     # Upload image to cloudinary
     image_url = upload_to_cloudinary(image_path)
 
+    # AI prediction
+    prediction = predict_skin_disease(image_path)
+
     return jsonify({
-        "message": "Image uploaded successfully",
-        "image_url": image_url
+        "message": "Image analyzed successfully",
+        "image_url": image_url,
+        "prediction": prediction
     })
